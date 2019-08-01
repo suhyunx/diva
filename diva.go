@@ -7,10 +7,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	sc "github.com/hyperledger/fabric/protos/peer"
+	"time"
 )
+
 
 // Define the Smart Contract structure
 type SmartContract struct {
@@ -65,13 +66,12 @@ func (s *SmartContract) getInfo(APIstub shim.ChaincodeStubInterface, args []stri
 
 func (s *SmartContract) enterCar(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
-	if len(args) != 1 {
+	if len(args) != 2 {
 		return shim.Error("Incorrect number of arguments. Expecting 1")
-
 	}
-
-	var car = Car{Carno: args[1], Intime: args[2], Outtime: args[3], Pay: args[4]}
-
+	
+	var car = Car{Carno: args[0], Intime: args[1] , Outtime: "", Pay: "-1"]}
+	
 	carAsBytes, _ := json.Marshal(car)
 	APIstub.PutState(args[0], carAsBytes)
 
@@ -80,21 +80,24 @@ func (s *SmartContract) enterCar(APIstub shim.ChaincodeStubInterface, args []str
 
 func (s *SmartContract) outCar(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
-	if len(args) != 2 {
+	if len(args) != 3 {
 		return shim.Error("Incorrect number of arguments. Expecting 2")
 	}
-
 	carAsBytes, _ := APIstub.GetState(args[0])
 	car := Car{}
-
 	json.Unmarshal(carAsBytes, &car)
-	car.Pay = args[1]
-
+    Intime = car.Intime
+	Outtime := time.Now() //현재 시간 
+	
+	time =  Outtime - intime // 시간차이 구성 go 언어 참조
+	Pay = time * 100
+	car.Outtime = Outtime
+	car.Pay = Pay
 	carAsBytes, _ = json.Marshal(car)
 	APIstub.PutState(args[0], carAsBytes)
-
 	return shim.Success(nil)
 }
+
 
 // The main function is only relevant in unit test mode. Only included here for completeness.
 func main() {
